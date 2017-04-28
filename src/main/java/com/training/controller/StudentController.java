@@ -9,7 +9,7 @@ import com.training.service.StudentService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/students")
+@RequestMapping("/student")
 public class StudentController {
 
 	@Autowired
@@ -22,5 +22,4 @@ public class StudentController {
 	public void setStudentService(StudentService studentService) {
 		this.studentService = studentService;
 	}
-
 }

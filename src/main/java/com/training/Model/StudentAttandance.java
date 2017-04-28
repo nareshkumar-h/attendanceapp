@@ -1,6 +1,9 @@
 package com.training.Model;
 
+import java.time.LocalDateTime;
+
 import javax.persistence.Column;
+import javax.persistence.Convert;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -8,6 +11,13 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.training.converter.CustomJsonDateDeserializer;
+import com.training.converter.JsonDateSerializer;
+import com.training.converter.LocalDateAttributeConverter;
 
 @Entity
 @Table(name = "attandance")
@@ -30,6 +40,24 @@ public class StudentAttandance {
 
 	@Column(name = "attended")
 	private boolean attended;
+
+	@JsonSerialize(using = JsonDateSerializer.class)
+	@Convert(converter = LocalDateAttributeConverter.class)
+	@Column(name = "created_date")
+	@JsonDeserialize(using = CustomJsonDateDeserializer.class)
+	private LocalDateTime createdDate;
+
+	@JsonSerialize(using = JsonDateSerializer.class)
+	@Convert(converter = LocalDateAttributeConverter.class)
+	@Column(name = "modified_date")
+	@JsonDeserialize(using = CustomJsonDateDeserializer.class)
+	private LocalDateTime modifiedDate;
+
+	@Transient
+	private boolean modified;
+
+	@Column(name = "modifiedBy")
+	private Long modifiedBy;
 
 	public Long getId() {
 		return id;
@@ -69,6 +97,38 @@ public class StudentAttandance {
 
 	public void setAttended(boolean attended) {
 		this.attended = attended;
+	}
+
+	public LocalDateTime getCreatedDate() {
+		return createdDate;
+	}
+
+	public void setCreatedDate(LocalDateTime createdDate) {
+		this.createdDate = createdDate;
+	}
+
+	public LocalDateTime getModifiedDate() {
+		return modifiedDate;
+	}
+
+	public void setModifiedDate(LocalDateTime modifiedDate) {
+		this.modifiedDate = modifiedDate;
+	}
+
+	public boolean isModified() {
+		return modified;
+	}
+
+	public void setModified(boolean modified) {
+		this.modified = modified;
+	}
+
+	public Long getModifiedBy() {
+		return modifiedBy;
+	}
+
+	public void setModifiedBy(Long modifiedBy) {
+		this.modifiedBy = modifiedBy;
 	}
 
 }

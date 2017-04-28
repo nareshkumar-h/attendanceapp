@@ -37,15 +37,6 @@ public class BatchDAOImpl implements BatchRepository {
 		return list;
 	}
 
-	/*
-	 * @Override public List<Student> getDepartmentsByPassingBatchId1(Long id) {
-	 * String sql =
-	 * "SELECT DISTINCT `department` FROM `students` s WHERE s.`batch_id`=" +
-	 * id;
-	 * 
-	 * List<Student> list = jdbcTemplate.query(sql, new Object[] { id }, (rs,
-	 * rowNum) -> { return convert(rs); }); return list; }
-	 */
 	@Override
 	public List<Student> getDepartmentsByPassingBatchId(Long id) {
 		String sql = "SELECT DISTINCT department FROM students s WHERE s.batch_id=?";

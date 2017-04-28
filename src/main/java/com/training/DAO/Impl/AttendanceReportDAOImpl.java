@@ -9,7 +9,6 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import com.training.DTO.StudentAttendanceDTO;
-import com.training.Model.StudentAttandance;
 import com.training.repository.AttendanceReportRepository;
 
 @Repository
@@ -34,7 +33,7 @@ public class AttendanceReportDAOImpl implements AttendanceReportRepository {
 
 		StringBuilder sql = new StringBuilder(
 				"SELECT a.name AS sName,a.email AS email,a.department dept,a.total_session totalSession,(SELECT COUNT(*) FROM attandance WHERE student_id=a.student_id "
-						+ "AND attended=1) AS total_attended,attendance_percent((SELECT COUNT(*) FROM attandance "
+						+ "AND attended=1) AS total_attended,attendance_percentage((SELECT COUNT(*) FROM attandance "
 						+ "WHERE student_id = a.student_id AND attended = 1),a.total_session)  AS attandancePercentage "
 						+ "FROM (SELECT aa.student_id,s.name,s.email,s.department,COUNT(aa.id) AS total_session "
 						+ "FROM attandance aa JOIN students s ON aa.student_id = s.id WHERE s.batch_id =? "
@@ -49,7 +48,7 @@ public class AttendanceReportDAOImpl implements AttendanceReportRepository {
 	public List<StudentAttendanceDTO> getStudentsDeptWiseAttendanceReport(Long id, String dept) {
 		StringBuilder sql = new StringBuilder(
 				"SELECT (SELECT COUNT(*) FROM attandance WHERE student_id=a.student_id AND attended=1) totalAttended,a.name AS sName,a.email AS email,a.department dept,"
-						+ "a.total_session totalSession,attendance_percent((SELECT COUNT(*) FROM attandance "
+						+ "a.total_session totalSession,attendance_percentage((SELECT COUNT(*) FROM attandance "
 						+ "WHERE student_id = a.student_id AND attended = 1),a.total_session)  AS attandancePercentage "
 						+ "FROM (SELECT aa.student_id,s.name,s.email,s.department,COUNT(aa.id) AS total_session "
 						+ "FROM attandance aa JOIN students s ON aa.student_id = s.id WHERE s.batch_id =? ");

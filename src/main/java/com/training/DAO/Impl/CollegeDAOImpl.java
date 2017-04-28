@@ -14,25 +14,24 @@ import com.training.repository.CollegeRepository;
 @Repository
 public class CollegeDAOImpl implements CollegeRepository {
 
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+	@Autowired
+	private JdbcTemplate jdbcTemplate;
 
-    private College convert(ResultSet rs) throws SQLException {
-        College c = new College();
-        c.setId(rs.getLong("id"));
-        c.setName(rs.getString("name"));
-        return c;
-    }
+	private College convert(ResultSet rs) throws SQLException {
+		College c = new College();
+		c.setId(rs.getLong("id"));
+		c.setName(rs.getString("name"));
+		return c;
+	}
 
-    @Override
-    public List<College> getCollegesList() {
-        String sql = "SELECT id,name FROM colleges";
+	@Override
+	public List<College> getCollegesList() {
+		String sql = "SELECT id,name FROM colleges";
 
-        List<College> list = jdbcTemplate.query(sql, new Object[] {}, (rs,
-                rowNum) -> {
-            return convert(rs);
-        });
-        return list;
-    }
+		List<College> list = jdbcTemplate.query(sql, new Object[] {}, (rs, rowNum) -> {
+			return convert(rs);
+		});
+		return list;
+	}
 
 }

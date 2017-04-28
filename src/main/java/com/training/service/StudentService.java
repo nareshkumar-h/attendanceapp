@@ -1,13 +1,16 @@
 package com.training.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import java.util.List;
+
 import org.springframework.stereotype.Service;
 
-import com.training.repository.StudentRepository;
+import com.training.Model.StudentAttandance;
 
 @Service
 public class StudentService {
 
-	/*@Autowired
-	StudentRepository studentRepository;*/
+	public List<StudentAttandance> doGetStudentInfoByUserName(String uName) {
+		return null;
+	}
+
 }
