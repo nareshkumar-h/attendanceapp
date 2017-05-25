@@ -11,17 +11,19 @@ import com.training.converter.JsonDateSerializer;
 import com.training.converter.LocalDateAttributeConverter;
 
 public class StudentAttendanceDTO {
-    private Long id;
+	private Long id;
 	private String sName;
 	private String email;
 	private String dept;
-	private Long attandancePercentage;
+	private Long attendancePercentage;
 	private Long totalSession;
 	private Long totalAttended;
 
 	private String mobileNo;
 	private boolean attended;
 	private String reason;
+	private String reviewedBy;
+	private String updatedBy;
 
 	@JsonSerialize(using = JsonDateSerializer.class)
 	@Convert(converter = LocalDateAttributeConverter.class)
@@ -39,8 +41,13 @@ public class StudentAttendanceDTO {
 	private Long studentAttendanceId;
 	private Long modifiedBy;
 	private boolean modified;
-	private Long reviewdBy;
-	private Long reviewStatus;
+	// private Long reviewdBy;
+	private String reviewStatus;
+	private String reviewComments;
+	private Long seedStatusId;
+	private boolean disabled;
+	private boolean requestByStudent;
+	private boolean freezed;
 
 	public String getsName() {
 		return sName;
@@ -66,12 +73,12 @@ public class StudentAttendanceDTO {
 		this.dept = dept;
 	}
 
-	public Long getAttandancePercentage() {
-		return attandancePercentage;
+	public Long getAttendancePercentage() {
+		return attendancePercentage;
 	}
 
-	public void setAttandancePercentage(Long attandancePercentage) {
-		this.attandancePercentage = attandancePercentage;
+	public void setAttendancePercentage(Long attendancePercentage) {
+		this.attendancePercentage = attendancePercentage;
 	}
 
 	public Long getTotalSession() {
@@ -194,23 +201,74 @@ public class StudentAttendanceDTO {
 		this.id = id;
 	}
 
-	public Long getReviewdBy() {
-		return reviewdBy;
-	}
+	/*
+	 * public Long getReviewdBy() { return reviewdBy; }
+	 * 
+	 * public void setReviewdBy(Long reviewdBy) { this.reviewdBy = reviewdBy; }
+	 */
 
-	public void setReviewdBy(Long reviewdBy) {
-		this.reviewdBy = reviewdBy;
-	}
-
-	public Long getReviewStatus() {
+	public String getReviewStatus() {
 		return reviewStatus;
 	}
 
-	public void setReviewStatus(Long reviewStatus) {
+	public void setReviewStatus(String reviewStatus) {
 		this.reviewStatus = reviewStatus;
 	}
-	
 
-	
+	public String getReviewComments() {
+		return reviewComments;
+	}
+
+	public void setReviewComments(String reviewComments) {
+		this.reviewComments = reviewComments;
+	}
+
+	public String getReviewedBy() {
+		return reviewedBy;
+	}
+
+	public void setReviewedBy(String reviewedBy) {
+		this.reviewedBy = reviewedBy;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
+	}
+
+	public Long getSeedStatusId() {
+		return seedStatusId;
+	}
+
+	public void setSeedStatusId(Long seedStatusId) {
+		this.seedStatusId = seedStatusId;
+	}
+
+	public boolean isDisabled() {
+		return disabled;
+	}
+
+	public void setDisabled(boolean disabled) {
+		this.disabled = disabled;
+	}
+
+	public boolean isRequestByStudent() {
+		return requestByStudent;
+	}
+
+	public void setRequestByStudent(boolean requestByStudent) {
+		this.requestByStudent = requestByStudent;
+	}
+
+	public boolean isFreezed() {
+		return freezed;
+	}
+
+	public void setFreezed(boolean freezed) {
+		this.freezed = freezed;
+	}
 
 }

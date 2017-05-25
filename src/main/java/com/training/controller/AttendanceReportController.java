@@ -20,13 +20,12 @@ public class AttendanceReportController {
 	@Autowired
 	AttendanceReportService attendanceReportService;
 
-	@GetMapping("/Student/batch/{id}")
-	public List<StudentAttendanceDTO> getBatches(@PathVariable("id") Long id) {
-		return attendanceReportService.doGetStudentsAttendanceReport(id);
+	@GetMapping("/Student/batch/{id}/dept/{dept}")
+	public List<StudentAttendanceDTO> getDepartmentWiseAttendanceReport(
+			@PathVariable("id") Long id, @PathVariable("dept") String dept) {
+		return attendanceReportService.doGetStudentsDeptWiseAttendanceReport(
+				id, dept);
+
 	}
 
-	@GetMapping("/Student/batch/{id}/dept/{dept}")
-	public List<StudentAttendanceDTO> getBatches(@PathVariable("id") Long id, @PathVariable("dept") String dept) {
-		return attendanceReportService.doGetStudentsDeptWiseAttendanceReport(id, dept);
-	}
 }

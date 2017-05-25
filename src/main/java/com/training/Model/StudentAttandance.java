@@ -20,7 +20,7 @@ import com.training.converter.JsonDateSerializer;
 import com.training.converter.LocalDateAttributeConverter;
 
 @Entity
-@Table(name = "attandance")
+@Table(name = "attendance")
 public class StudentAttandance {
 
 	@Id
@@ -41,6 +41,9 @@ public class StudentAttandance {
 	@Column(name = "attended")
 	private boolean attended;
 
+	@Column(name = "present_by_student")
+	private boolean present;
+
 	@JsonSerialize(using = JsonDateSerializer.class)
 	@Convert(converter = LocalDateAttributeConverter.class)
 	@Column(name = "created_date")
@@ -55,6 +58,12 @@ public class StudentAttandance {
 
 	@Transient
 	private boolean modified;
+
+	@Transient
+	private boolean freeze;
+
+	@Transient
+	private String updatedBy;
 
 	@Column(name = "modifiedBy")
 	private Long modifiedBy;
@@ -129,6 +138,30 @@ public class StudentAttandance {
 
 	public void setModifiedBy(Long modifiedBy) {
 		this.modifiedBy = modifiedBy;
+	}
+
+	public boolean isPresent() {
+		return present;
+	}
+
+	public void setPresent(boolean present) {
+		this.present = present;
+	}
+
+	public boolean isFreeze() {
+		return freeze;
+	}
+
+	public void setFreeze(boolean freeze) {
+		this.freeze = freeze;
+	}
+
+	public String getUpdatedBy() {
+		return updatedBy;
+	}
+
+	public void setUpdatedBy(String updatedBy) {
+		this.updatedBy = updatedBy;
 	}
 
 }

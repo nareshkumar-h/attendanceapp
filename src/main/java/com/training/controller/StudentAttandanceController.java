@@ -18,27 +18,36 @@ import com.training.service.StudentAttandanceService;
 
 @CrossOrigin
 @RestController
-@RequestMapping("/attandance")
+@RequestMapping("/attendance")
 public class StudentAttandanceController {
 
 	@Autowired
 	StudentAttandanceService studentAttandanceService;
 
 	@GetMapping("/Student/batch/{id}/trainingDate/{date}/dept/{dept}")
-	public List<StudentAttandance> getBatches(@PathVariable("id") Long id, @PathVariable("date") String date,
-			@PathVariable("dept") String dept) {
-		return studentAttandanceService.doGetStudentsByBatchIdAndTrainingDate(id, date, dept);
+	public List<StudentAttandance> getBatches(@PathVariable("id") Long id,
+			@PathVariable("date") String date, @PathVariable("dept") String dept) {
+		return studentAttandanceService.doGetStudentsByBatchIdAndTrainingDate(
+				id, date, dept);
 	}
 
 	@GetMapping("/Student/batch/{id}/trainingDate/{date}")
-	public List<StudentAttandance> getBatchesForAllDepartments(@PathVariable("id") Long id,
-			@PathVariable("date") String date) {
-		return studentAttandanceService.doGetStudentsByBatchIdAndTrainingDate(id, date);
+	public List<StudentAttandance> getBatchesForAllDepartments(
+			@PathVariable("id") Long id, @PathVariable("date") String date) {
+		return studentAttandanceService.doGetStudentsByBatchIdAndTrainingDate(
+				id, date);
+	}
+	
+	@GetMapping("/student")
+	public List<StudentAttendanceDTO> getStudentAttendanceList(
+			@RequestParam(value = "userName") String userName) {
+		return studentAttandanceService.doGetStudentAttendanceList(userName);
 	}
 
-	@PutMapping("/update")
-	public void updateStudent(@RequestBody StudentAttandance student) {
-		studentAttandanceService.doUpdateStudentAttendanceStatus(student);
+	@PutMapping("student/update")
+	public void updateStudentAttendance(
+			@RequestBody StudentAttendanceDTO student) {
+		studentAttandanceService.doUpdateStudentAttendance(student);
 	}
 
 	@PutMapping
@@ -46,35 +55,47 @@ public class StudentAttandanceController {
 		studentAttandanceService.doUpdateAllStudentsAttendanceStatus(student);
 	}
 
-	@GetMapping("/student")
-	public List<StudentAttendanceDTO> getStudentAttendanceList(@RequestParam(value = "userName") String userName) {
-		return studentAttandanceService.doGetStudentAttendanceList(userName);
-	}
-
-	@PutMapping("student/update")
-	public void updateStudentAttendance(@RequestBody StudentAttendanceDTO student) {
-		studentAttandanceService.doUpdateStudentAttendance(student);
+	@PutMapping("/update")
+	public void updateStudent(@RequestBody StudentAttandance student) {
+		studentAttandanceService.doUpdateStudentAttendanceStatus(student);
 	}
 
 	@PutMapping("/updateAll")
-	public void updateAllTrainingDatesStudentAttendance(@RequestBody List<StudentAttendanceDTO> student) {
-		studentAttandanceService.doUpdateAllTrainingDatesStudentAttendance(student);
+	public void updateAllTrainingDatesStudentAttendance(
+			@RequestBody List<StudentAttendanceDTO> student) {
+		studentAttandanceService
+				.doUpdateAllTrainingDatesStudentAttendance(student);
 	}
-	
-	
+
 	@GetMapping("/studentReview")
 	public List<StudentAttendanceDTO> getStudentAttendanceInReviewList() {
 		return studentAttandanceService.doGetStudentAttendanceInReviewList();
 	}
-	
+
 	@GetMapping("/InReview/byCollege/{college}")
-	public List<StudentAttendanceDTO> getStudentAttendanceInReviewListByCollege( @PathVariable("college") String college) {
-		return studentAttandanceService.doGetStudentAttendanceInReviewListByCollege(college);
+	public List<StudentAttendanceDTO> getStudentAttendanceInReviewListByCollege(
+			@PathVariable("college") String college) {
+		return studentAttandanceService
+				.doGetStudentAttendanceInReviewListByCollege(college);
 	}
+
 	@PutMapping("/review/update")
-	public void updateStudentReviewAttendance(@RequestBody StudentAttendanceDTO student) {
+	public void updateStudentReviewAttendance(
+			@RequestBody StudentAttendanceDTO student) {
 		studentAttandanceService.doUpdateStudentReviewAttendance(student);
 	}
-	
 
+	@PutMapping("/request/byStudent")
+	public void updateReviewStatusOfStudent(
+			@RequestBody StudentAttendanceDTO student) {
+		studentAttandanceService.doUpdateReviewStatusOfStudent(student);
+	}
+
+	@PutMapping("/freezeAttendance")
+	public void updateReviewStatusOfList(
+			@RequestParam(value = "trDate") String trDate,
+			@RequestParam(value = "freezed") boolean status) {
+		System.out.println(trDate + " " + status);
+		studentAttandanceService.doFreezeAttendanceList(trDate, status);
+	}
 }

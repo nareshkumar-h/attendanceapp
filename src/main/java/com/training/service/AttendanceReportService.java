@@ -14,11 +14,6 @@ public class AttendanceReportService {
 	@Autowired
 	AttendanceReportRepository attendanceReportRepository;
 
-	public List<StudentAttendanceDTO> doGetStudentsAttendanceReport(Long id) {
-
-		return attendanceReportRepository.getStudentsAttendanceReport(id);
-	}
-
 	public List<StudentAttendanceDTO> doGetStudentsDeptWiseAttendanceReport(Long id, String dept) {
 		return attendanceReportRepository.getStudentsDeptWiseAttendanceReport(id, dept);
 	}

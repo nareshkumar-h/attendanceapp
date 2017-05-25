@@ -29,6 +29,9 @@ public class Training {
 	@Transient
 	private String trDate;
 
+	@Column(name = "freeze")
+	private boolean freeze;
+
 	public LocalDate getDate() {
 		return date;
 	}
@@ -61,6 +64,14 @@ public class Training {
 
 	public void setTrDate(String trDate) {
 		this.trDate = trDate;
+	}
+
+	public boolean isFreeze() {
+		return freeze;
+	}
+
+	public void setFreeze(boolean freeze) {
+		this.freeze = freeze;
 	}
 
 }

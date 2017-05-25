@@ -24,48 +24,35 @@ public class AttendanceReportDAOImpl implements AttendanceReportRepository {
 		student.setEmail(rs.getString(3));
 		student.setDept(rs.getString(4));
 		student.setTotalSession(rs.getLong(5));
-		student.setAttandancePercentage(rs.getLong(6));
+		student.setAttendancePercentage(rs.getLong(6));
 		return student;
 	}
 
 	@Override
-	public List<StudentAttendanceDTO> getStudentsAttendanceReport(Long id) {
-
+	public List<StudentAttendanceDTO> getStudentsDeptWiseAttendanceReport(
+			Long id, String dept) {
 		StringBuilder sql = new StringBuilder(
-				"SELECT a.name AS sName,a.email AS email,a.department dept,a.total_session totalSession,(SELECT COUNT(*) FROM attandance WHERE student_id=a.student_id "
-						+ "AND attended=1) AS total_attended,attendance_percentage((SELECT COUNT(*) FROM attandance "
-						+ "WHERE student_id = a.student_id AND attended = 1),a.total_session)  AS attandancePercentage "
+				"SELECT (SELECT COUNT(*) FROM attendance WHERE student_id=a.student_id AND attended=1) totalAttended,a.name AS sName,a.email AS email,a.department dept,"
+						+ "a.total_session totalSession,attendance_percentage((SELECT COUNT(*) FROM attendance "
+						+ "WHERE student_id = a.student_id AND attended = 1),a.total_session)  AS attendancePercentage "
 						+ "FROM (SELECT aa.student_id,s.name,s.email,s.department,COUNT(aa.id) AS total_session "
-						+ "FROM attandance aa JOIN students s ON aa.student_id = s.id WHERE s.batch_id =? "
-						+ "GROUP BY student_id) a ");
-
-		return jdbcTemplate.query(sql.toString(), new Object[] { id }, (rs, rowNum) -> {
-			return convert(rs);
-		});
-	}
-
-	@Override
-	public List<StudentAttendanceDTO> getStudentsDeptWiseAttendanceReport(Long id, String dept) {
-		StringBuilder sql = new StringBuilder(
-				"SELECT (SELECT COUNT(*) FROM attandance WHERE student_id=a.student_id AND attended=1) totalAttended,a.name AS sName,a.email AS email,a.department dept,"
-						+ "a.total_session totalSession,attendance_percentage((SELECT COUNT(*) FROM attandance "
-						+ "WHERE student_id = a.student_id AND attended = 1),a.total_session)  AS attandancePercentage "
-						+ "FROM (SELECT aa.student_id,s.name,s.email,s.department,COUNT(aa.id) AS total_session "
-						+ "FROM attandance aa JOIN students s ON aa.student_id = s.id WHERE s.batch_id =? ");
+						+ "FROM attendance aa JOIN students s ON aa.student_id = s.id WHERE s.batch_id =? ");
 
 		if (dept.equals("null")) {
 
-			sql.append("GROUP BY student_id) a ORDER BY attandancePercentage DESC , a.department ");
+			sql.append("GROUP BY student_id) a ORDER BY attendancePercentage DESC , a.department ");
 
-			return jdbcTemplate.query(sql.toString(), new Object[] { id }, (rs, rowNum) -> {
+			return jdbcTemplate.query(sql.toString(), new Object[] { id }, (rs,
+					rowNum) -> {
 				return convert(rs);
 			});
 
 		} else {
-			sql.append("AND s.department=? GROUP BY student_id) a ORDER BY attandancePercentage DESC , a.department");
-			return jdbcTemplate.query(sql.toString(), new Object[] { id, dept }, (rs, rowNum) -> {
-				return convert(rs);
-			});
+			sql.append("AND s.department=? GROUP BY student_id) a ORDER BY attendancePercentage DESC , a.department");
+			return jdbcTemplate.query(sql.toString(),
+					new Object[] { id, dept }, (rs, rowNum) -> {
+						return convert(rs);
+					});
 		}
 
 	}

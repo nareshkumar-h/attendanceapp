@@ -5,6 +5,8 @@ import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import javax.persistence.Transient;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
@@ -19,7 +21,7 @@ import com.training.repository.StudentAttandanceRepository;
  */
 @Repository
 public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
-	private static final String UPDATEQUERY = "UPDATE attandance SET attended=?,reason=?,modified_date=?,modified_by=? WHERE ID=?";
+	private static final String UPDATEQUERY = "UPDATE attendance SET attended=?,reason=?,modified_date=?,modified_by=? WHERE ID=?";
 
 	@Autowired
 	private JdbcTemplate jdbcTemplate;
@@ -38,54 +40,67 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 		student.setAttended(rs.getBoolean("attended"));
 		student.setCreatedDate(rs.getTimestamp(8).toLocalDateTime());
 		student.setModifiedDate(rs.getTimestamp(9).toLocalDateTime());
+		student.setFreeze(rs.getBoolean("freeze"));
 		student.setStudentId(s);
+		student.setUpdatedBy(rs.getString("lastmodifiedBy"));
 
 		return student;
 
 	}
 
 	@Override
-	public List<StudentAttandance> getStudentsByBatchIdAndTrainingDate(Long id, String date, String dept) {
+	public List<StudentAttandance> getStudentsByBatchIdAndTrainingDate(Long id,
+			String date, String dept) {
 		List<StudentAttandance> list = null;
 		StringBuilder sql = new StringBuilder(
 				"SELECT sa.id, s.name,s.email,s.department,s.mobile_no,sa.attended,sa.reason,sa.created_date,"
-						+ "sa.modified_date,s.batch_id FROM training t "
-						+ "JOIN  attandance sa ON t.id=sa.training_id JOIN students s ON sa.student_id=s.id "
+						+ "sa.modified_date,s.batch_id,t.freeze,u.name lastmodifiedBy FROM training t "
+						+ "JOIN  attendance sa ON t.id=sa.training_id JOIN students s ON sa.student_id=s.id "
+						+ "LEFT JOIN users u ON sa.`modified_by`=u.`id`"
 						+ "WHERE t.batch_id=? AND t.training_date=? AND s.department=?");
-
-		list = jdbcTemplate.query(sql.toString(), new Object[] { id, date, dept }, (rs, rowNum) -> {
-			return convert(rs);
-		});
+		list = jdbcTemplate.query(sql.toString(),
+				new Object[] { id, date, dept }, (rs, rowNum) -> {
+					return convert(rs);
+				});
 		return list;
 	}
 
 	@Override
-	public void updateStudentAttendanceStatus(StudentAttandance studentAttandance, LocalDateTime modifiedDate) {
-		jdbcTemplate.update(UPDATEQUERY, studentAttandance.isAttended(), studentAttandance.getReason(), modifiedDate,
+	public void updateStudentAttendanceStatus(
+			StudentAttandance studentAttandance, LocalDateTime modifiedDate) {
+		jdbcTemplate.update(UPDATEQUERY, studentAttandance.isAttended(),
+				studentAttandance.getReason(), modifiedDate,
 				studentAttandance.getModifiedBy(), studentAttandance.getId());
 
 	}
 
 	@Override
-	public void updateAllStudentsAttendanceStatus(List<StudentAttandance> studentList, LocalDateTime modifiedDate) {
+	public void updateAllStudentsAttendanceStatus(
+			List<StudentAttandance> studentList, LocalDateTime modifiedDate) {
 		for (StudentAttandance s : studentList) {
 
-			jdbcTemplate.update(UPDATEQUERY, s.isAttended(), s.getReason(), modifiedDate, s.getModifiedBy(), s.getId());
+			jdbcTemplate.update(UPDATEQUERY, s.isAttended(), s.getReason(),
+					modifiedDate, s.getModifiedBy(), s.getId());
 
 		}
 	}
 
 	@Override
-	public void updateStudentAttendance(StudentAttendanceDTO student, LocalDateTime modifiedDate) {
-		jdbcTemplate.update(UPDATEQUERY, student.isAttended(), student.getReason(), modifiedDate,
-				student.getModifiedBy(), student.getStudentAttendanceId());
+	public void updateStudentAttendance(StudentAttendanceDTO student,
+			LocalDateTime modifiedDate) {
+		jdbcTemplate.update(UPDATEQUERY, student.isAttended(),
+				student.getReason(), modifiedDate, student.getModifiedBy(),
+				student.getStudentAttendanceId());
 	}
 
 	@Override
-	public void updateAllStudentAttendance(List<StudentAttendanceDTO> student, LocalDateTime modifiedDate) {
+	public void updateAllStudentAttendance(List<StudentAttendanceDTO> student,
+			LocalDateTime modifiedDate) {
 		for (StudentAttendanceDTO s : student) {
-			jdbcTemplate.update(UPDATEQUERY, s.isAttended(), s.getReason(), modifiedDate, s.getModifiedBy(),
-					s.getStudentAttendanceId());
+			jdbcTemplate
+					.update(UPDATEQUERY, s.isAttended(), s.getReason(),
+							modifiedDate, s.getModifiedBy(),
+							s.getStudentAttendanceId());
 
 		}
 
@@ -94,20 +109,26 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 	@Override
 	public List<StudentAttendanceDTO> getStudentAttendanceList(String userName) {
 		List<StudentAttendanceDTO> list = null;
+
 		StringBuilder sql = new StringBuilder(
 				"SELECT s.name,s.email,s.department,s.mobile_no,a.attended,a.id,a.reason,a.created_date,a.modified_date,"
-						+ "c.name,s.batch_id,b.batch_name,t.training_date FROM attandance a JOIN students s ON "
+						+ "c.name,s.batch_id,b.batch_name,t.training_date,u.`name` updatedBy,uu.`name` reviewedName,ss.status,"
+						+ "a.present_by_student,t.freeze FROM attendance a JOIN students s ON "
 						+ "a.student_id=s.id JOIN batches b ON b.batch_no=s.batch_id JOIN colleges c ON c.`id`=b.`college_id`"
-						+ " JOIN training t ON a.training_id=t.id WHERE s.email=?");
+						+ " JOIN training t ON a.training_id=t.id LEFT JOIN users u ON a.`modified_by`=u.`id` "
+						+ "LEFT JOIN users uu ON a.`reviewed_by`=uu.id LEFT JOIN seed_status ss ON ss.`id`=a.`review_status`"
+						+ "  WHERE s.email=? ORDER BY t.training_date");
 
-		list = jdbcTemplate.query(sql.toString(), new Object[] { userName }, (rs, rowNum) -> {
+		list = jdbcTemplate.query(sql.toString(), new Object[] { userName }, (
+				rs, rowNum) -> {
 			return convertToStudentObj(rs);
 		});
 
 		return list;
 	}
 
-	private StudentAttendanceDTO convertToStudentObj(ResultSet rs) throws SQLException {
+	private StudentAttendanceDTO convertToStudentObj(ResultSet rs)
+			throws SQLException {
 
 		StudentAttendanceDTO student = new StudentAttendanceDTO();
 		student.setsName(rs.getString(1));
@@ -117,13 +138,19 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 		student.setAttended(rs.getBoolean("attended"));
 		student.setStudentAttendanceId(rs.getLong("id"));
 		student.setReason(rs.getString("reason"));
-		student.setCreatedDate(rs.getTimestamp("created_date").toLocalDateTime());
-		student.setModifiedDate(rs.getTimestamp("modified_date").toLocalDateTime());
+		student.setCreatedDate(rs.getTimestamp("created_date")
+				.toLocalDateTime());
+		student.setModifiedDate(rs.getTimestamp("modified_date")
+				.toLocalDateTime());
 		student.setCollegeName(rs.getString(10));
 		student.setBatchId(rs.getLong("batch_id"));
 		student.setBatchName(rs.getString("batch_name"));
 		student.setTrDate(rs.getString("training_date"));
-
+		student.setReviewedBy(rs.getString("reviewedName"));
+		student.setUpdatedBy(rs.getString("updatedBy"));
+		student.setReviewStatus(rs.getString("status"));
+		student.setRequestByStudent(rs.getBoolean("present_by_student"));
+		student.setFreezed(rs.getBoolean("freeze"));
 		return student;
 
 	}
@@ -133,11 +160,13 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 		List<StudentAttandance> list = null;
 		StringBuilder sql = new StringBuilder(
 				"SELECT sa.id, s.name,s.email,s.department,s.mobile_no,sa.attended,sa.reason,sa.created_date,"
-						+ "sa.modified_date,s.batch_id FROM training t "
-						+ "JOIN  attandance sa ON t.id=sa.training_id JOIN students s ON sa.student_id=s.id "
+						+ "sa.modified_date,s.batch_id,t.freeze,u.name lastmodifiedBy FROM training t "
+						+ "JOIN  attendance sa ON t.id=sa.training_id JOIN students s ON sa.student_id=s.id "
+						+ "LEFT JOIN users u ON sa.`modified_by`=u.`id`"
 						+ "WHERE t.batch_id=? AND t.training_date=?");
 
-		list = jdbcTemplate.query(sql.toString(), new Object[] { id, date}, (rs, rowNum) -> {
+		list = jdbcTemplate.query(sql.toString(), new Object[] { id, date }, (
+				rs, rowNum) -> {
 			return convert(rs);
 		});
 		return list;
@@ -147,19 +176,21 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 	public List<StudentAttendanceDTO> getStudentAttendanceInReviewList() {
 		List<StudentAttendanceDTO> list = null;
 		StringBuilder sql = new StringBuilder(
-				"SELECT a.`id`,s.`name`,s.`email`,s.`department`,s.`mobile_no`,a.`reason`,c.`name` FROM attandance a JOIN students s"
-				+ " ON s.`id`=a.`student_id` LEFT JOIN `batches` b ON s.`batch_id`=b.`batch_no` LEFT JOIN `colleges` c "
-				+ "ON b.`college_id`=c.`id` WHERE a.`review_status`=1;");
+				"SELECT a.`id`,s.`name`,s.`email`,s.`department`,s.`mobile_no`,a.`reason`,c.`name`,a.present_by_student,"
+						+ "t.`training_date`,a.attended FROM attendance a JOIN students s"
+						+ " ON s.`id`=a.`student_id` LEFT JOIN `batches` b ON s.`batch_id`=b.`batch_no` LEFT JOIN `colleges` c "
+						+ "ON b.`college_id`=c.`id` LEFT JOIN training t ON a.`training_id`=t.`id` WHERE a.`review_status`=1");
 
-		list = jdbcTemplate.query(sql.toString(), new Object[] {  }, (rs, rowNum) -> {
-			return convertToStudent(rs);
-		});
+		list = jdbcTemplate.query(sql.toString(), new Object[] {},
+				(rs, rowNum) -> {
+					return convertToStudent(rs);
+				});
 
 		return list;
 	}
-	
-	
-	private StudentAttendanceDTO convertToStudent(ResultSet rs) throws SQLException {
+
+	private StudentAttendanceDTO convertToStudent(ResultSet rs)
+			throws SQLException {
 
 		StudentAttendanceDTO student = new StudentAttendanceDTO();
 		student.setId(rs.getLong("id"));
@@ -167,24 +198,26 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 		student.setEmail(rs.getString("email"));
 		student.setDept(rs.getString("department"));
 		student.setMobileNo(rs.getString("mobile_no"));
-		
+		student.setRequestByStudent(rs.getBoolean("present_by_student"));
 		student.setReason(rs.getString("reason"));
-		//student.setModifiedDate(rs.getTimestamp("modified_date").toLocalDateTime());
 		student.setCollegeName(rs.getString(7));
-		//
+		student.setTrDate(rs.getString("training_date"));
+		student.setAttended(rs.getBoolean("attended"));
 		return student;
 
 	}
 
 	@Override
-	public List<StudentAttendanceDTO> getStudentAttendanceInReviewListByCollege(String college) {
+	public List<StudentAttendanceDTO> getStudentAttendanceInReviewListByCollege(
+			String college) {
 		List<StudentAttendanceDTO> list = null;
 		StringBuilder sql = new StringBuilder(
-				"SELECT a.`id`,s.`name`,s.`email`,s.`department`,s.`mobile_no`,a.`reason`,c.`name` FROM attandance a JOIN students s"
-				+ " ON s.`id`=a.`student_id` LEFT JOIN `batches` b ON s.`batch_id`=b.`batch_no` LEFT JOIN `colleges` c "
-				+ "ON b.`college_id`=c.`id` WHERE a.`review_status`=1 AND c.`name`=?;");
+				"SELECT a.`id`,s.`name`,s.`email`,s.`department`,s.`mobile_no`,a.`reason`,c.`name`,a.present_by_student,t.`training_date`,a.attended FROM attendance a JOIN students s"
+						+ " ON s.`id`=a.`student_id` LEFT JOIN `batches` b ON s.`batch_id`=b.`batch_no` LEFT JOIN `colleges` c "
+						+ "ON b.`college_id`=c.`id` LEFT JOIN training t ON a.`training_id`=t.`id` WHERE a.`review_status`=1 AND c.`name`=?");
 
-		list = jdbcTemplate.query(sql.toString(), new Object[] { college }, (rs, rowNum) -> {
+		list = jdbcTemplate.query(sql.toString(), new Object[] { college }, (
+				rs, rowNum) -> {
 			return convertToStudent(rs);
 		});
 
@@ -194,12 +227,31 @@ public class StudentAttandanceDAOImpl implements StudentAttandanceRepository {
 	@Override
 	public void updateStudentReviewAttendance(StudentAttendanceDTO student,
 			LocalDateTime modifiedDate) {
-		jdbcTemplate.update("UPDATE attandance a SET a.`modified_by`=?,a.`reviewd_by`=?,a.`review_status`=?,a.`modified_date`=? WHERE a.`id`=?", student.getModifiedBy(),student.getReviewdBy(),student.getReviewStatus(), modifiedDate,
-				student.getId());
-	
-		
+		jdbcTemplate
+				.update("UPDATE attendance a SET a.attended=?,a.`modified_by`=?,a.`reviewed_by`=?,a.`review_status`=?,a.`modified_date`=?,a.review_comments=? WHERE a.`id`=?",
+						student.isAttended(), student.getModifiedBy(),
+						student.getReviewedBy(), student.getReviewStatus(),
+						modifiedDate, student.getReviewComments(),
+						student.getId());
+
 	}
 
-	
+	@Override
+	public void updateReviewStudentStatus(StudentAttendanceDTO student,
+			LocalDateTime today) {
+		String sql = "UPDATE attendance SET present_by_student=?,reason=?,modified_date=?,modified_by=?,review_status=? WHERE ID=?";
 
+		jdbcTemplate.update(sql, student.isRequestByStudent(),
+				student.getReason(), today, student.getModifiedBy(),
+				student.getSeedStatusId(), student.getStudentAttendanceId());
+
+	}
+
+	@Override
+	public void freezeAttendance(String trDate, boolean status) {
+		String sql = "UPDATE training SET freeze=? WHERE training_date=?";
+
+		jdbcTemplate.update(sql, status, trDate);
+
+	}
 }
